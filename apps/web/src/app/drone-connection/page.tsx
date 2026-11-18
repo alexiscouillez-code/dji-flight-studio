@@ -1,4 +1,5 @@
-import { CheckCircle2, ExternalLink, MinusCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CheckCircle2, ExternalLink, MinusCircle, Smartphone } from "lucide-react";
 import { CAPABILITY_LABELS, DRONE_PROFILES, type Capability } from "@dfs/drone-adapters";
 import { PageHeader } from "@/components/PageHeader";
 
@@ -8,7 +9,8 @@ export default function DroneConnection() {
   return (
     <>
       <PageHeader eyebrow="Universal Drone Adapter" title="Drone Connection"
-        description="Chaque drone a une fiche de compatibilité sourcée. Une fonction n'est exposée que si le matériel et un SDK officiel la prennent réellement en charge." />
+        description="Chaque drone a une fiche de compatibilité sourcée. Une fonction n'est exposée que si le matériel et un SDK officiel la prennent réellement en charge."
+        actions={<Link href="/companion" className="btn btn-primary"><Smartphone size={16} />Ouvrir Neo 2 Companion<ArrowRight size={15} /></Link>} />
       {Object.values(DRONE_PROFILES).map((p) => (
         <div key={p.id} className="grid gap-4 xl:grid-cols-3">
           <section className="panel p-5 xl:col-span-2">

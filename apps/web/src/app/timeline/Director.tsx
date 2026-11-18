@@ -314,7 +314,7 @@ export function Director({ initialTab }: { initialTab: DirectorTab }) {
             <section>
               <div className="mb-2 flex items-center justify-between">
                 <div className="label">Séquence · {shots.length} plan(s)</div>
-                <Link href="/cinematic-library" className="text-[11px] text-cyan hover:underline">Bibliothèque</Link>
+                <span className="flex gap-3"><Link href="/cinematic-library" className="text-[11px] text-cyan hover:underline">Bibliothèque</Link><Link href="/companion" className="text-[11px] text-cyan hover:underline">Companion</Link></span>
               </div>
               <div className="mb-2 flex flex-wrap gap-1">{QUICK.map((id) => <button key={id} className="btn h-7 px-2 text-[11px]" onClick={() => addShot(id)} disabled={!project}><Plus size={11} />{MOVES_BY_ID[id]!.name}</button>)}</div>
               <ol className="space-y-1">

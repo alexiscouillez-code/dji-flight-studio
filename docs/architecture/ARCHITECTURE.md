@@ -96,7 +96,7 @@ Intention (UI ou IA) ─► MovePreset (JSON validé Zod) ─► cinematic-engin
 | **1 — Foundation** ✅ | Monorepo, design system, navigation 11 modules, dashboard réel, projets CRUD + export/import versionné, Supabase Auth + RLS, moteurs géo/trajectoire/sécurité/capacités testés | Build vert, 42 tests unitaires + test RLS verts, parcours E2E vérifié |
 | 2 — Geographic Virtual Studio ✅ | Cesium, terrain, imagerie à fournisseurs, géocodage, import GPX sur relief, profil altimétrique, lieux favoris, qualité graphique | Charger Chamonix + un GPX, profil cohérent avec le DEM |
 | 3 — Cinematic Engine ✅ (sauf assistant IA) | Flight Designer (waypoints dans la scène), bibliothèque 20 mouvements, Camera Director, Timeline, Simulator | Créer, prévisualiser et simuler une séquence de 5 plans |
-| 4 — Neo 2 Companion | Mode Companion pas-à-pas, check-list, guide DJI Fly | Utilisable sur iPhone en extérieur, hors ligne pour le plan |
+| 4 — Neo 2 Companion ✅ | Mode Companion pas-à-pas, check-list, guide DJI Fly | Utilisable sur iPhone en extérieur, hors ligne pour le plan |
 | 5 — Universal DJI Adapter | Adaptateurs MSDK sur drones réellement compatibles, télémétrie, missions si supportées, app iOS | Tests sur matériel compatible |
 | 6 — Flight Studio Pro | Optimisation, exports avancés, documentation complète | — |
 
@@ -131,3 +131,10 @@ Prévues : `cesium` (P2), `three`, `@react-three/fiber`, `@react-three/drei`, `@
 - **`@dfs/cinematic-engine`** : 20 mouvements + trajectoire personnalisée, chacun une fonction pure `sample(u, params, ctx)`. `planSequence` / `evaluateSequence` enchaînent les plans ; les transitions sont des courbes d'Hermite qui raccordent position **et** vitesse (C1). Les aperçus de la bibliothèque sont calculés par ces mêmes fonctions.
 - **`@dfs/flight-simulator`** : mode idéal ou inertie (point matériel, vitesse et accélération bornées, suivi PD), analyse : vitesse, accélération, hauteurs, éloignement, distance au sujet, dégagement et collision virtuelle avec le relief Cesium. Rapier n'est pas utilisé : il n'y a pas encore de maillages d'obstacles à faire collisionner ; il deviendra utile avec les bâtiments 3D.
 - **Assistant IA cinématique** : reporté. Il produira un `Shot[]` validé par `ShotSchema` (format v3), sans jamais commander de drone.
+
+## Phase 4 — Neo 2 Companion
+
+- **`buildCompanionGuide`** (`@dfs/cinematic-engine/companion`) : à partir de la séquence simulée, chaque plan devient une fiche de repères — départ/arrivée (H / décollage, distance et direction depuis le sujet, cap caméra, inclinaison nacelle), trajet, vitesses, angle d'orbite, indications de sticks en **Mode 2**, mode intelligent DJI Fly correspondant quand la FAQ officielle du Neo 2 le liste (Circle, Dronie, Follow), conseils. Export Markdown (`guideToMarkdown`).
+- **Écran `/companion`** (accessible depuis Drone Connection et la Timeline) : check-list (vérifications automatiques + 8 validations humaines obligatoires), mise en place (lien Plans, « Me situer » par géolocalisation à la demande), une carte par plan avec minuteur de répétition, atterrissage, fin de session journalisée dans l'historique du projet. Écran maintenu allumé (Wake Lock) pendant la session.
+- **Hors ligne** : service worker (`public/sw.js`) — pages en réseau d'abord avec repli cache, assets Next en cache ; Cesium et API tierces jamais mis en cache. Le dernier projet ouvert dans le Companion est conservé localement. Installable sur l'écran d'accueil (manifest + icônes).
+- **Ce que le Companion ne fait pas** : aucune communication avec le Neo 2, la RC-N2 ou DJI Fly ; aucune lecture d'écran ; aucune automatisation. Les valeurs sont des repères issus de la simulation.
