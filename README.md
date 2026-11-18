@@ -17,7 +17,9 @@ Pour les comptes : `apps/web/.env.example` + `docs/api/DATABASE.md`.
 
 ## Déploiement Vercel
 Production : https://dji-flight-studio.vercel.app
-Root directory : `apps/web` · Framework : Next.js · Install : `npx -y pnpm@10.28.0 install --no-frozen-lockfile` (évite le pnpm 6 par défaut de Vercel, incompatible Node 22) · Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
+Dépôt : https://github.com/alexiscouillez-code/dji-flight-studio · Supabase : projet `dji-flight-studio` (eu-west-3)
+Root directory : `apps/web` · Framework : Next.js · Install : `npx -y pnpm@10.28.0 install --frozen-lockfile` · Build : `npx -y pnpm@10.28.0 run build` (copie CesiumJS dans `public/cesium` puis `next build`)
+Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_CESIUM_ION_TOKEN` (toutes publiques ; jamais de clé service_role). · Variables : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
 
 ## Matériel de référence
 DJI Neo 2 + RC-N2 + iPhone → **mode Companion manuel** : aucun SDK officiel identifié pour ce modèle (voir `docs/compatibility/DJI.md`). DJI Fly reste responsable du pilotage.
