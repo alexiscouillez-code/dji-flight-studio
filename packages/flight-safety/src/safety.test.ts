@@ -3,7 +3,7 @@ import { migrateProject } from "@dfs/shared-types";
 import { evaluateMission, isBlocking } from "./safety";
 
 const proj = (extra: object = {}) => migrateProject({
-  schemaVersion: 2, id: "7b0c5d1e-2f4a-4c1b-9d7e-3a2b1c0d9e8f", name: "t",
+  schemaVersion: 3, id: "7b0c5d1e-2f4a-4c1b-9d7e-3a2b1c0d9e8f", name: "t",
   createdAt: "2026-11-17T10:00:00.000Z", updatedAt: "2026-11-17T10:00:00.000Z", ...extra,
 });
 const w = (alt: number, i = 1) => ({

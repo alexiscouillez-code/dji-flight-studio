@@ -1,3 +1,3 @@
-import { PlannedModule } from "@/components/PlannedModule";
+import { Director } from "../timeline/Director";
 export const metadata = { title: "Simulator" };
-export default function Page() { return <PlannedModule id="simulator" />; }
+export default function Page() { return <Director initialTab="simulation" />; }

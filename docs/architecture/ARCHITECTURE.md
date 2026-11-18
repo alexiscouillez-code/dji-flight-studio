@@ -94,8 +94,8 @@ Intention (UI ou IA) ─► MovePreset (JSON validé Zod) ─► cinematic-engin
 | Phase | Contenu | Critère de sortie |
 |---|---|---|
 | **1 — Foundation** ✅ | Monorepo, design system, navigation 11 modules, dashboard réel, projets CRUD + export/import versionné, Supabase Auth + RLS, moteurs géo/trajectoire/sécurité/capacités testés | Build vert, 42 tests unitaires + test RLS verts, parcours E2E vérifié |
-| 2 — Geographic Virtual Studio | Cesium, terrain, imagerie à fournisseurs, géocodage, import GPX sur relief, profil altimétrique, lieux favoris, qualité graphique | Charger Chamonix + un GPX, profil cohérent avec le DEM |
-| 3 — Cinematic Engine | Flight Designer (waypoints dans la scène), bibliothèque 20 mouvements, Camera Director, Timeline, Simulator, assistant IA | Créer, prévisualiser et simuler une séquence de 5 plans |
+| 2 — Geographic Virtual Studio ✅ | Cesium, terrain, imagerie à fournisseurs, géocodage, import GPX sur relief, profil altimétrique, lieux favoris, qualité graphique | Charger Chamonix + un GPX, profil cohérent avec le DEM |
+| 3 — Cinematic Engine ✅ (sauf assistant IA) | Flight Designer (waypoints dans la scène), bibliothèque 20 mouvements, Camera Director, Timeline, Simulator | Créer, prévisualiser et simuler une séquence de 5 plans |
 | 4 — Neo 2 Companion | Mode Companion pas-à-pas, check-list, guide DJI Fly | Utilisable sur iPhone en extérieur, hors ligne pour le plan |
 | 5 — Universal DJI Adapter | Adaptateurs MSDK sur drones réellement compatibles, télémétrie, missions si supportées, app iOS | Tests sur matériel compatible |
 | 6 — Flight Studio Pro | Optimisation, exports avancés, documentation complète | — |
@@ -122,3 +122,12 @@ Intention (UI ou IA) ─► MovePreset (JSON validé Zod) ─► cinematic-engin
 | @electric-sql/pglite | racine (dev) | Test RLS sur un vrai Postgres embarqué |
 
 Prévues : `cesium` (P2), `three`, `@react-three/fiber`, `@react-three/drei`, `@dimforge/rapier3d-compat` (P3).
+
+
+## Phase 3 — décisions d'implémentation
+
+- **Rendu 3D : CesiumJS seul.** Trajectoires, drone, sujet et caméra virtuelle sont rendus comme entités Cesium dans le même repère que le relief. La superposition Three.js prévue au §3 n'apporte rien tant qu'il n'y a pas de modèles 3D détaillés ; elle reste possible plus tard via le repère ENU partagé.
+- **Repère de scène** (`apps/web/src/lib/scene.ts`) : origine = sol du sujet (ou du décollage), z = hauteur au-dessus de ce sol. Les hauteurs « / décollage » affichées = z − z(décollage). Les altitudes du sol issues de Cesium sont **ellipsoïdales WGS84** (référentiel `terrain_wgs84`, ajouté au format v3 ; les points v2 ont été réétiquetés par migration).
+- **`@dfs/cinematic-engine`** : 20 mouvements + trajectoire personnalisée, chacun une fonction pure `sample(u, params, ctx)`. `planSequence` / `evaluateSequence` enchaînent les plans ; les transitions sont des courbes d'Hermite qui raccordent position **et** vitesse (C1). Les aperçus de la bibliothèque sont calculés par ces mêmes fonctions.
+- **`@dfs/flight-simulator`** : mode idéal ou inertie (point matériel, vitesse et accélération bornées, suivi PD), analyse : vitesse, accélération, hauteurs, éloignement, distance au sujet, dégagement et collision virtuelle avec le relief Cesium. Rapier n'est pas utilisé : il n'y a pas encore de maillages d'obstacles à faire collisionner ; il deviendra utile avec les bâtiments 3D.
+- **Assistant IA cinématique** : reporté. Il produira un `Shot[]` validé par `ShotSchema` (format v3), sans jamais commander de drone.

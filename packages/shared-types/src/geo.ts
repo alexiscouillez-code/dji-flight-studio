@@ -10,6 +10,7 @@ export type LatLon = z.infer<typeof LatLonSchema>;
 /**
  * Altitude references — NEVER mix them (prompt §7.6).
  * - terrain_msl      : terrain elevation above mean sea level (from a DEM)
+ * - terrain_wgs84    : terrain height above the WGS84 ellipsoid (Cesium terrain; differs from MSL by the geoid, ≈ +50 m in the Alps)
  * - drone_amsl       : absolute altitude of the drone above mean sea level
  * - takeoff_relative : height relative to the take-off point (what DJI Fly shows as "H")
  * - agl              : real height above the ground directly below
@@ -17,6 +18,7 @@ export type LatLon = z.infer<typeof LatLonSchema>;
  */
 export const AltitudeReferenceSchema = z.enum([
   "terrain_msl",
+  "terrain_wgs84",
   "drone_amsl",
   "takeoff_relative",
   "agl",
@@ -26,6 +28,7 @@ export type AltitudeReference = z.infer<typeof AltitudeReferenceSchema>;
 
 export const ALTITUDE_REFERENCE_LABELS: Record<AltitudeReference, string> = {
   terrain_msl: "Altitude terrain (MSL)",
+  terrain_wgs84: "Altitude terrain (ellipsoïde WGS84)",
   drone_amsl: "Altitude absolue drone (AMSL)",
   takeoff_relative: "Hauteur / point de décollage",
   agl: "Hauteur au-dessus du sol (AGL)",

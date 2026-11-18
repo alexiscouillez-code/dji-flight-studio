@@ -9,7 +9,7 @@ import { useStudio } from "@/lib/store";
 import { Logo } from "./Logo";
 
 /** Routes that use the full viewport (3D workspaces). */
-const IMMERSIVE = new Set(["/virtual-world"]);
+const IMMERSIVE = new Set(["/virtual-world", "/flight-designer", "/timeline", "/camera-director", "/simulator"]);
 
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();

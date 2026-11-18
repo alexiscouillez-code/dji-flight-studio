@@ -20,12 +20,18 @@ importers:
 
   apps/web:
     dependencies:
+      '@dfs/cinematic-engine':
+        specifier: workspace:*
+        version: link:../../packages/cinematic-engine
       '@dfs/drone-adapters':
         specifier: workspace:*
         version: link:../../packages/drone-adapters
       '@dfs/flight-safety':
         specifier: workspace:*
         version: link:../../packages/flight-safety
+      '@dfs/flight-simulator':
+        specifier: workspace:*
+        version: link:../../packages/flight-simulator
       '@dfs/geographic-engine':
         specifier: workspace:*
         version: link:../../packages/geographic-engine
@@ -82,6 +88,15 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
+  packages/cinematic-engine:
+    dependencies:
+      '@dfs/shared-types':
+        specifier: workspace:*
+        version: link:../shared-types
+      '@dfs/trajectory-engine':
+        specifier: workspace:*
+        version: link:../trajectory-engine
+
   packages/drone-adapters:
     dependencies:
       '@dfs/shared-types':
@@ -96,6 +111,12 @@ importers:
       '@dfs/shared-types':
         specifier: workspace:*
         version: link:../shared-types
+
+  packages/flight-simulator:
+    dependencies:
+      '@dfs/trajectory-engine':
+        specifier: workspace:*
+        version: link:../trajectory-engine
 
   packages/geographic-engine:
     dependencies:

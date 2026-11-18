@@ -152,7 +152,7 @@ export function VirtualWorld() {
     let point: ScenePoint = { position: p };
     try {
       const [h] = await globe.current!.sampleTerrain([p]);
-      if (h !== null && h !== undefined) point = { position: p, terrain: { valueM: h, reference: "terrain_msl", source: PROVIDERS["ion-world-terrain"]!.label } };
+      if (h !== null && h !== undefined) point = { position: p, terrain: { valueM: h, reference: "terrain_wgs84", source: PROVIDERS["ion-world-terrain"]!.label } };
     } catch { /* keep without terrain */ }
     await update((pr) => ({ ...pr, scene: { ...pr.scene, [mode]: point } }), mode === "takeoff" ? "Point de décollage placé" : "Sujet placé");
   }
@@ -209,7 +209,7 @@ export function VirtualWorld() {
         {cursor ? (
           <div className="mono space-y-0.5">
             <div>{formatLatLon(cursor, 5)}</div>
-            <div className="text-faint">{cursor.renderedTerrainM !== null ? <>Terrain ≈ {Math.round(cursor.renderedTerrainM)} m <span className="text-[10px]">(tuile affichée, {PROVIDERS["ion-world-terrain"]!.label})</span></> : "Altitude terrain indisponible"}</div>
+            <div className="text-faint">{cursor.renderedTerrainM !== null ? <>Sol ≈ {Math.round(cursor.renderedTerrainM)} m <span className="text-[10px]">(ellipsoïde WGS84, tuile affichée)</span></> : "Altitude terrain indisponible"}</div>
           </div>
         ) : <span className="text-faint">Survolez le globe</span>}
       </div>
@@ -339,13 +339,13 @@ export function VirtualWorld() {
                 return (
                   <button key={m} className={`btn h-auto flex-col items-start gap-0.5 py-2 text-left ${pickMode === m ? "border-cyan/70" : ""}`} disabled={!project} onClick={() => setPickMode(pickMode === m ? null : m)}>
                     <span className="flex items-center gap-1.5 text-xs"><Crosshair size={13} className={m === "takeoff" ? "text-accent" : "text-warn"} />{m === "takeoff" ? "Décollage" : "Sujet"}</span>
-                    <span className="mono text-[10px] text-faint">{pt ? (pt.terrain ? `${Math.round(pt.terrain.valueM)} m terrain` : "placé · alt. n/d") : "à placer"}</span>
+                    <span className="mono text-[10px] text-faint">{pt ? (pt.terrain ? `sol ${Math.round(pt.terrain.valueM)} m (WGS84)` : "placé · alt. n/d") : "à placer"}</span>
                   </button>
                 );
               })}
             </div>
             <button className="btn mt-2 h-8 w-full justify-center text-xs" onClick={saveView} disabled={!project}><Camera size={13} />Enregistrer la vue 3D dans le projet</button>
-            <p className="mt-1.5 text-[10.5px] leading-relaxed text-faint">Altitudes de terrain (MSL) issues de {PROVIDERS["ion-world-terrain"]!.label}, distinctes des hauteurs de vol. Les obstacles (câbles, arbres…) ne sont pas représentés.</p>
+            <p className="mt-1.5 text-[10.5px] leading-relaxed text-faint">Altitudes du sol issues de {PROVIDERS["ion-world-terrain"]!.label}, exprimées au-dessus de l'ellipsoïde WGS84 (≈ altitude carte + 50 m dans les Alpes), distinctes des hauteurs de vol. Les obstacles (câbles, arbres…) ne sont pas représentés.</p>
           </section>
 
           {/* Layers */}

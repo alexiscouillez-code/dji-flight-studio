@@ -1,3 +1,3 @@
-import { PlannedModule } from "@/components/PlannedModule";
+import { CinematicLibrary } from "./CinematicLibrary";
 export const metadata = { title: "Cinematic Library" };
-export default function Page() { return <PlannedModule id="cinematic-library" />; }
+export default function Page() { return <CinematicLibrary />; }

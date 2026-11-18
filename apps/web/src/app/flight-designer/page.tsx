@@ -1,3 +1,3 @@
-import { PlannedModule } from "@/components/PlannedModule";
+import { FlightDesigner } from "./FlightDesigner";
 export const metadata = { title: "Flight Designer" };
-export default function Page() { return <PlannedModule id="flight-designer" />; }
+export default function Page() { return <FlightDesigner />; }

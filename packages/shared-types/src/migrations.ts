@@ -11,6 +11,15 @@ const MIGRATIONS: Record<number, Migration> = {
   0: (doc) => ({ ...doc, schemaVersion: 1 }),
   // v2 (Phase 2): GPX tracks stored in the project + geographic scene (take-off, subject, saved view).
   1: (doc) => ({ ...doc, gpxTracks: [], scene: {}, schemaVersion: 2 }),
+  // v3 (Phase 3): typed timeline / camera / simulation; Cesium terrain heights are ellipsoidal,
+  // so scene points sampled in v2 are relabelled terrain_wgs84 (they were wrongly tagged MSL).
+  2: (doc) => {
+    const scene = (doc.scene ?? {}) as Record<string, any>;
+    const fix = (pt: any) => (pt?.terrain?.reference === "terrain_msl" && /cesium/i.test(pt.terrain.source ?? "")
+      ? { ...pt, terrain: { ...pt.terrain, reference: "terrain_wgs84" } } : pt);
+    return { ...doc, scene: { ...scene, ...(scene.takeoff ? { takeoff: fix(scene.takeoff) } : {}), ...(scene.subject ? { subject: fix(scene.subject) } : {}) },
+      timeline: [], camera: {}, simulation: {}, schemaVersion: 3 };
+  },
 };
 
 export class ProjectMigrationError extends Error {}

@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@dfs/cinematic-engine": "workspace:*",
     "@dfs/drone-adapters": "workspace:*",
     "@dfs/flight-safety": "workspace:*",
+    "@dfs/flight-simulator": "workspace:*",
     "@dfs/geographic-engine": "workspace:*",
     "@dfs/shared-types": "workspace:*",
     "@dfs/trajectory-engine": "workspace:*",

@@ -11,9 +11,11 @@ const base = {
 describe("migrateProject", () => {
   it("migrates an unversioned document to the current version and fills defaults", () => {
     const p = migrateProject(base);
-    expect(p.schemaVersion).toBe(2);
+    expect(p.schemaVersion).toBe(3);
     expect(p.gpxTracks).toEqual([]);
     expect(p.scene).toEqual({});
+    expect(p.camera.fovDeg).toBe(80);
+    expect(p.simulation.mode).toBe("ideal");
     expect(p.waypoints).toEqual([]);
     expect(p.environment).toEqual({ kind: "none" });
     expect(p.droneProfileId).toBe("dji-neo-2");
@@ -21,9 +23,15 @@ describe("migrateProject", () => {
 
   it("migrates v1 → v2", () => {
     const p = migrateProject({ ...base, schemaVersion: 1, environment: { kind: "real", center: { lat: 45.9, lon: 6.87 } } });
-    expect(p.schemaVersion).toBe(2);
+    expect(p.schemaVersion).toBe(3);
     expect(p.environment.kind).toBe("real");
     expect(p.gpxTracks).toEqual([]);
+  });
+
+  it("migrates v2 → v3 and relabels Cesium terrain heights as ellipsoidal", () => {
+    const p = migrateProject({ ...base, schemaVersion: 2, scene: { takeoff: { position: { lat: 45.9, lon: 6.87 }, terrain: { valueM: 2000, reference: "terrain_msl", source: "Cesium World Terrain" } } } });
+    expect(p.scene.takeoff?.terrain?.reference).toBe("terrain_wgs84");
+    expect(p.timeline).toEqual([]);
   });
 
   it("accepts a valid v1 document", () => {
@@ -35,7 +43,7 @@ describe("migrateProject", () => {
   });
 
   it("rejects invalid payloads with a readable message", () => {
-    expect(() => migrateProject({ ...base, schemaVersion: 2, name: "" })).toThrow(/name/);
+    expect(() => migrateProject({ ...base, schemaVersion: 3, name: "" })).toThrow(/name/);
     expect(() => migrateProject([])).toThrow(ProjectMigrationError);
     expect(() => migrateProject({ ...base, schemaVersion: "1" })).toThrow(/schemaVersion/);
   });

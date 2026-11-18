@@ -24,6 +24,8 @@ export interface GlobeHandle {
   /** Most-detailed terrain heights (m, MSL-ish per provider) — null when only the ellipsoid is available. */
   sampleTerrain(points: LatLon[]): Promise<(number | null)[]>;
   terrainAvailable(): boolean;
+  /** Raw Cesium access for workspaces that draw their own entities. */
+  raw(): { viewer: import("cesium").Viewer; Cs: Cesium } | null;
 }
 
 interface Props {
@@ -278,6 +280,7 @@ export function GlobeView(props: Props) {
       return res.map((c) => (Number.isFinite(c.height) ? c.height : null));
     },
     terrainAvailable: () => terrainOk.current,
+    raw: () => (viewerRef.current && C.current ? { viewer: viewerRef.current, Cs: C.current } : null),
   }), []);
 
   return (

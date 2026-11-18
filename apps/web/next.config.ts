@@ -9,6 +9,8 @@ const config: NextConfig = {
     "@dfs/trajectory-engine",
     "@dfs/drone-adapters",
     "@dfs/flight-safety",
+    "@dfs/cinematic-engine",
+    "@dfs/flight-simulator",
   ],
   async headers() {
     return [
