@@ -17,6 +17,8 @@ import { getQuality, QUALITY_LEVELS, setQuality as persistQuality, type Quality 
 import { createLocationsStore, type SavedLocation } from "@/lib/locations";
 import { getSupabase } from "@/lib/supabase";
 import { useStudio } from "@/lib/store";
+import { useSunTime } from "@/lib/useSunTime";
+import { SunControl } from "@/components/globe/SunControl";
 
 const LAST_PROJECT = "dfs.vw.project";
 const geocoder = hasIonToken ? createIonGeocoder(CESIUM_ION_TOKEN, (u, i) => fetch(u, i)) : createNominatimGeocoder((u, i) => fetch(u, i));
@@ -31,6 +33,8 @@ export function VirtualWorld() {
 
   const [imagery, setImagery] = useState<ImageryMode>(hasIonToken ? "satellite" : "map");
   const [terrain, setTerrain] = useState(true);
+  const [photoreal, setPhotoreal] = useState(true);
+  const [sunDate, sunFixed, setSun] = useSunTime();
   const [showTracks, setShowTracks] = useState(true);
   const [showMarkers, setShowMarkers] = useState(true);
   const [quality, setQualityState] = useState<{ value: Quality; auto: boolean }>({ value: "medium", auto: true });
@@ -200,7 +204,7 @@ export function VirtualWorld() {
       <GlobeView
         ref={globe} quality={quality.value} imagery={imagery} terrain={terrain} showTracks={showTracks} showMarkers={showMarkers}
         tracks={project?.gpxTracks ?? []} takeoff={project?.scene.takeoff?.position} subject={project?.scene.subject?.position}
-        searchPin={pin} pickMode={pickMode} initialView={project?.scene.view}
+        searchPin={pin} pickMode={pickMode} initialView={project?.scene.view} photoreal={photoreal} sunDate={sunDate}
         onPick={onPick} onCursor={setCursor} onStatus={setStatus}
       />
 
@@ -352,13 +356,20 @@ export function VirtualWorld() {
           <section>
             <div className="label mb-2 flex items-center gap-1.5"><Layers size={12} />Couches</div>
             <div className="grid grid-cols-2 gap-1.5 text-xs">
-              <Toggle on={imagery === "satellite"} disabled={!hasIonToken} onClick={() => setImagery("satellite")} label="Satellite" />
-              <Toggle on={imagery === "map"} onClick={() => setImagery("map")} label="Carte" />
+              <Toggle on={photoreal && Boolean(status?.photoreal)} disabled={!status?.photoreal} onClick={() => setPhotoreal((v) => !v)} label="3D photoréaliste" />
+              <Toggle on={imagery === "satellite" && !(photoreal && status?.photoreal)} disabled={!hasIonToken || (photoreal && Boolean(status?.photoreal))} onClick={() => setImagery("satellite")} label="Satellite" />
+              <Toggle on={imagery === "map" && !(photoreal && status?.photoreal)} disabled={photoreal && Boolean(status?.photoreal)} onClick={() => setImagery("map")} label="Carte" />
               <Toggle on={terrain && terrainAvailable} disabled={!terrainAvailable} onClick={() => setTerrain((t) => !t)} label="Relief 3D" />
               <Toggle on={showTracks} onClick={() => setShowTracks((v) => !v)} label="Parcours GPX" />
               <Toggle on={showMarkers} onClick={() => setShowMarkers((v) => !v)} label="Points" />
               <Toggle on={false} disabled label="Zones (à venir)" />
             </div>
+          </section>
+
+          {/* Sun */}
+          <section>
+            <div className="label mb-2">Lumière réelle (soleil)</div>
+            <SunControl date={sunDate} fixed={sunFixed} onChange={setSun} lat={project?.scene.subject?.position.lat ?? (project?.environment.kind === "real" ? project.environment.center.lat : 45.92)} lon={project?.scene.subject?.position.lon ?? (project?.environment.kind === "real" ? project.environment.center.lon : 6.87)} />
           </section>
 
           {/* Quality */}
@@ -372,7 +383,7 @@ export function VirtualWorld() {
           </section>
 
           <section className="border-t border-line pt-3 text-[10.5px] leading-relaxed text-faint">
-            <div className="flex items-center gap-1.5"><LocateFixed size={11} />Sources : {status?.terrain === "world-terrain" ? PROVIDERS["ion-world-terrain"]!.label : "ellipsoïde WGS84 (sans relief)"} · {status?.imagery === "ion-aerial" && imagery === "satellite" ? PROVIDERS["ion-aerial"]!.label : PROVIDERS.osm!.label}. Données streamées, non stockées hors ligne.</div>
+            <div className="flex items-center gap-1.5"><LocateFixed size={11} />Sources : {status?.photoreal && photoreal ? PROVIDERS["google-3d"]!.label : <>{status?.terrain === "world-terrain" ? PROVIDERS["ion-world-terrain"]!.label : "ellipsoïde WGS84 (sans relief)"} · {status?.imagery === "ion-aerial" && imagery === "satellite" ? PROVIDERS["ion-aerial"]!.label : PROVIDERS.osm!.label}</>}. Ombres actives en qualité High / Ultra. Données streamées, non stockées hors ligne.</div>
           </section>
         </div>
       </aside>

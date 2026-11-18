@@ -17,12 +17,18 @@ importers:
       vitest:
         specifier: ^2.1.8
         version: 2.1.9(@types/node@22.20.5)(lightningcss@1.33.0)
+      ws:
+        specifier: ^8.23.0
+        version: 8.23.0
 
   apps/web:
     dependencies:
       '@dfs/cinematic-engine':
         specifier: workspace:*
         version: link:../../packages/cinematic-engine
+      '@dfs/dji-adapter':
+        specifier: workspace:*
+        version: link:../../packages/dji-adapter
       '@dfs/drone-adapters':
         specifier: workspace:*
         version: link:../../packages/drone-adapters
@@ -96,6 +102,18 @@ importers:
       '@dfs/trajectory-engine':
         specifier: workspace:*
         version: link:../trajectory-engine
+
+  packages/dji-adapter:
+    dependencies:
+      '@dfs/drone-adapters':
+        specifier: workspace:*
+        version: link:../drone-adapters
+      '@dfs/trajectory-engine':
+        specifier: workspace:*
+        version: link:../trajectory-engine
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.76
 
   packages/drone-adapters:
     dependencies:
@@ -1294,6 +1312,18 @@ packages:
     engines: {node: '>=8'}
     hasBin: true
 
+  ws@8.23.0:
+    resolution: {integrity: sha512-wCkmX8QMOrKjgO8HW2WyDbTSGeqkocxgDzS9iR79rEAexty6/2qzilx3Ag8Tqf9ykop3irLKle0MtVn5qjVnoQ==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
@@ -2257,5 +2287,7 @@ snapshots:
     dependencies:
       siginfo: 2.0.0
       stackback: 0.0.2
+
+  ws@8.23.0: {}
 
   zod@3.25.76: {}

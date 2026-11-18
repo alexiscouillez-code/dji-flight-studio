@@ -97,7 +97,7 @@ Intention (UI ou IA) ─► MovePreset (JSON validé Zod) ─► cinematic-engin
 | 2 — Geographic Virtual Studio ✅ | Cesium, terrain, imagerie à fournisseurs, géocodage, import GPX sur relief, profil altimétrique, lieux favoris, qualité graphique | Charger Chamonix + un GPX, profil cohérent avec le DEM |
 | 3 — Cinematic Engine ✅ (sauf assistant IA) | Flight Designer (waypoints dans la scène), bibliothèque 20 mouvements, Camera Director, Timeline, Simulator | Créer, prévisualiser et simuler une séquence de 5 plans |
 | 4 — Neo 2 Companion ✅ | Mode Companion pas-à-pas, check-list, guide DJI Fly | Utilisable sur iPhone en extérieur, hors ligne pour le plan |
-| 5 — Universal DJI Adapter | Adaptateurs MSDK sur drones réellement compatibles, télémétrie, missions si supportées, app iOS | Tests sur matériel compatible |
+| 5 — Universal DJI Adapter ✅ (côté web ; pont natif à écrire) | Adaptateurs MSDK sur drones réellement compatibles, télémétrie, missions si supportées, app iOS | Tests sur matériel compatible |
 | 6 — Flight Studio Pro | Optimisation, exports avancés, documentation complète | — |
 
 ### Prochaine étape immédiate (début Phase 2)
@@ -138,3 +138,14 @@ Prévues : `cesium` (P2), `three`, `@react-three/fiber`, `@react-three/drei`, `@
 - **Écran `/companion`** (accessible depuis Drone Connection et la Timeline) : check-list (vérifications automatiques + 8 validations humaines obligatoires), mise en place (lien Plans, « Me situer » par géolocalisation à la demande), une carte par plan avec minuteur de répétition, atterrissage, fin de session journalisée dans l'historique du projet. Écran maintenu allumé (Wake Lock) pendant la session.
 - **Hors ligne** : service worker (`public/sw.js`) — pages en réseau d'abord avec repli cache, assets Next en cache ; Cesium et API tierces jamais mis en cache. Le dernier projet ouvert dans le Companion est conservé localement. Installable sur l'écran d'accueil (manifest + icônes).
 - **Ce que le Companion ne fait pas** : aucune communication avec le Neo 2, la RC-N2 ou DJI Fly ; aucune lecture d'écran ; aucune automatisation. Les valeurs sont des repères issus de la simulation.
+
+## Phase 5 — Universal DJI Adapter
+
+- **Profils MSDK V5 sourcés** : Mini 4 Pro (RC-N2, MSDK ≥ 5.13), Mini 3 / Mini 3 Pro (≥ 5.3), Matrice 30, Matrice 350 RTK, Matrice 4E/4T. Capacités « non vérifiées » tant qu'aucun adaptateur n'a été testé sur le matériel. Neo 2 : toujours Companion manuel.
+- **`@dfs/dji-adapter`** : protocole `dfs-bridge/1` (docs/api/BRIDGE_PROTOCOL.md), client avec handshake et validation, détection des capacités (`negotiate`), compilation du plan en mission `dfs-mission/1`, exports GPX et GeoJSON.
+- **Limite assumée** : MSDK V5 est Android uniquement ; aucune app iOS ne peut piloter ces appareils. L'application pont Android reste à écrire et à tester sur matériel (Android Studio + clé DJI + appareil compatible).
+
+## Rendu en conditions réelles
+- Google Photorealistic 3D Tiles via Cesium ion (relief, bâtiments, végétation) quand le token l'autorise, sinon Cesium World Terrain + imagerie. Géocodage Google via ion (obligatoire avec ces tuiles).
+- Éclairage solaire réel selon date et heure (atmosphère, brouillard), ombres en qualité High/Ultra, contrôle de l'heure avec lever, heure dorée et coucher calculés (`sunTimes`, précision ~2 min, relief non pris en compte).
+- Démarrage en vue rasante sur le massif du Mont-Blanc au lieu de la vue depuis l'espace.

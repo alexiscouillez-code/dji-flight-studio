@@ -20,6 +20,11 @@ export const PROVIDERS: Record<string, ProviderInfo> = {
     attribution: "Cesium ion", licenceUrl: "https://cesium.com/legal/terms-of-service/", offlineAllowed: false,
     notes: "Relief mondial ; résolution variable selon les régions. Quota selon l'offre Cesium ion.",
   },
+  "google-3d": {
+    id: "google-3d", label: "3D photoréaliste (Google, via Cesium ion)", kind: "terrain", requiresToken: true,
+    attribution: "Google", licenceUrl: "https://cloud.google.com/maps-platform/terms", offlineAllowed: false,
+    notes: "Maillage 3D réel (relief, bâtiments, végétation). Uniquement avec le géocodeur Google ; pas de cache hors ligne ; logo Google affiché.",
+  },
   "ion-aerial": {
     id: "ion-aerial", label: "Satellite (Bing Maps Aerial via Cesium ion)", kind: "imagery", requiresToken: true,
     attribution: "Microsoft / Cesium ion", licenceUrl: "https://cesium.com/legal/terms-of-service/", offlineAllowed: false,
@@ -61,13 +66,14 @@ type FetchLike = (url: string, init?: { signal?: AbortSignal; headers?: Record<s
 const num = (v: unknown) => (typeof v === "number" ? v : typeof v === "string" ? Number(v) : NaN);
 const validLatLon = (lat: number, lon: number) => Number.isFinite(lat) && Number.isFinite(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180;
 
-export function createIonGeocoder(token: string, fetchFn: FetchLike): GeocoderAdapter {
+/** Cesium ion geocoder; `provider: "google"` is required when Google Photorealistic 3D Tiles are displayed. */
+export function createIonGeocoder(token: string, fetchFn: FetchLike, provider: "default" | "google" = "google"): GeocoderAdapter {
   return {
-    info: PROVIDERS["ion-geocoder"]!,
+    info: { ...PROVIDERS["ion-geocoder"]!, label: provider === "google" ? "Google (via Cesium ion)" : PROVIDERS["ion-geocoder"]!.label },
     async search(query, signal) {
       const q = query.trim();
       if (!q) return [];
-      const url = `https://api.cesium.com/v1/geocode/search?text=${encodeURIComponent(q)}&access_token=${encodeURIComponent(token)}`;
+      const url = `https://api.cesium.com/v1/geocode/search?text=${encodeURIComponent(q)}${provider === "google" ? "&geocoder=google" : ""}&access_token=${encodeURIComponent(token)}`;
       const res = await fetchFn(url, { signal });
       if (!res.ok) throw new Error(`Géocodage Cesium indisponible (HTTP ${res.status}).`);
       const body = (await res.json()) as { features?: unknown[] };

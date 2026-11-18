@@ -19,7 +19,11 @@ Vérification effectuée le **2026-11-17**. À refaire avant toute intégration 
 3. Toutes les capacités autres que `manual-companion` sont affichées **Not Supported**, avec la raison et le workflow manuel correspondant (voir `packages/drone-adapters/src/profiles.ts`).
 4. L'interface `DroneAdapter` n'expose une méthode que si elle est réellement implémentée par un SDK officiel ; l'adaptateur Companion n'en expose aucune (testé).
 
-## Ajouter un drone (Phase 5)
+## Profils MSDK V5 (Phase 5, vérifiés le 2026-11-18)
+
+Mini 4 Pro (RC-N2, depuis MSDK 5.13.0), Mini 3 / Mini 3 Pro (depuis 5.3.0), Matrice 30, Matrice 350 RTK, Matrice 4E/4T. Mini 5 Pro : non supporté à ce jour d'après les sources consultées. Toutes les capacités restent « non vérifiées » jusqu'à un test sur matériel.
+
+## Ajouter un drone
 
 1. Vérifier modèle, firmware, SDK, plateformes (iOS/Android), conditions d'utilisation, fonctions réellement disponibles.
 2. Créer la fiche `DroneProfile` avec `verifiedOn`, `firmwareChecked`, `sources`.

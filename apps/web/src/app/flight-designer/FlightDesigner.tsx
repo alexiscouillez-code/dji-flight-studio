@@ -14,6 +14,8 @@ import { withHistory } from "@/lib/projects";
 import { getQuality } from "@/lib/quality";
 import { useActiveProject } from "@/lib/useActiveProject";
 import { useStudio } from "@/lib/store";
+import { useSunTime } from "@/lib/useSunTime";
+import { SunControl } from "@/components/globe/SunControl";
 import { hasIonToken } from "@/lib/cesium";
 
 const DS = "flight-designer";
@@ -30,6 +32,7 @@ export function FlightDesigner() {
   const [selected, setSelected] = useState<string | null>(null);
   const [clearance, setClearance] = useState<number | null | undefined>(undefined);
   const dirty = useRef(false);
+  const [sunDate] = useSunTime();
 
   // local draft of the waypoints, saved with a debounce (one history entry per burst of edits)
   useEffect(() => { setWps(project?.waypoints ?? []); dirty.current = false; setSelected(null); }, [projectId]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -100,7 +103,8 @@ export function FlightDesigner() {
     const h = new Cs.ScreenSpaceEventHandler(viewer.scene.canvas);
     const groundAt = (pos: import("cesium").Cartesian2): LatLon | null => {
       const ray = viewer.camera.getPickRay(pos);
-      const c = (ray && viewer.scene.globe.pick(ray, viewer.scene)) ?? viewer.camera.pickEllipsoid(pos);
+      const onMesh = !viewer.scene.globe.show && viewer.scene.pickPositionSupported ? viewer.scene.pickPosition(pos) : undefined;
+      const c = onMesh ?? (ray && viewer.scene.globe.show ? viewer.scene.globe.pick(ray, viewer.scene) : undefined) ?? viewer.camera.pickEllipsoid(pos);
       if (!c) return null;
       const g = Cs.Cartographic.fromCartesian(c);
       return { lat: Cs.Math.toDegrees(g.latitude), lon: Cs.Math.toDegrees(g.longitude) };
@@ -173,7 +177,7 @@ export function FlightDesigner() {
     <div className="relative h-[calc(100dvh-3.5rem)] w-full overflow-hidden lg:h-dvh">
       <GlobeView ref={globe} quality={getQuality().value} imagery={hasIonToken ? "satellite" : "map"} terrain showTracks showMarkers
         tracks={project?.gpxTracks ?? []} takeoff={project?.scene.takeoff?.position} subject={project?.scene.subject?.position}
-        pickMode={pickMode} initialView={project?.scene.view} onPick={onPick} onStatus={setStatus} />
+        pickMode={pickMode} initialView={project?.scene.view} onPick={onPick} onStatus={setStatus} sunDate={sunDate} />
       <PickBanner pickMode={pickMode} label={`Touchez le globe pour placer ${pickMode === "takeoff" ? "le décollage" : "le sujet"}`} onCancel={() => setPickMode(null)} />
       {adding && !pickMode && <PickBanner pickMode="add" label="Touchez le globe pour ajouter un waypoint · glissez un point pour le déplacer" onCancel={() => setAdding(false)} />}
       <Toast msg={msg} onClose={() => setMsg(null)} />

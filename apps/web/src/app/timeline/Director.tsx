@@ -17,6 +17,8 @@ import { withHistory } from "@/lib/projects";
 import { getQuality } from "@/lib/quality";
 import { useActiveProject } from "@/lib/useActiveProject";
 import { useStudio } from "@/lib/store";
+import { useSunTime } from "@/lib/useSunTime";
+import { SunControl } from "@/components/globe/SunControl";
 import { hasIonToken } from "@/lib/cesium";
 
 export type DirectorTab = "plan" | "camera" | "simulation";
@@ -43,6 +45,7 @@ export function Director({ initialTab }: { initialTab: DirectorTab }) {
   const [cam, setCam] = useState<CameraSettings>({ mode: "drone", fovDeg: 80, subjectHeightM: 1.7, letterbox: true });
   const [sim, setSim] = useState<SimulationSettings>({ mode: "ideal", maxSpeedMs: 8, maxAccelMs2: 3, minClearanceM: 10 });
   const dirty = useRef(false);
+  const [sunDate, sunFixed, setSun] = useSunTime();
   const loadedFor = useRef<string | null>(null);
   useEffect(() => {
     if (!project || dirty.current) return;
@@ -234,7 +237,7 @@ export function Director({ initialTab }: { initialTab: DirectorTab }) {
     <div className="relative h-[calc(100dvh-3.5rem)] w-full overflow-hidden lg:h-dvh">
       <GlobeView ref={globe} quality={getQuality().value} imagery={hasIonToken ? "satellite" : "map"} terrain showTracks showMarkers
         tracks={project?.gpxTracks ?? []} takeoff={project?.scene.takeoff?.position} subject={cam.mode === "free" ? project?.scene.subject?.position : undefined}
-        pickMode={pickMode} initialView={project?.scene.view} onPick={onPick} onStatus={setStatus} />
+        pickMode={pickMode} initialView={project?.scene.view} onPick={onPick} onStatus={setStatus} sunDate={sunDate} />
 
       {letterbox && (
         <div className="pointer-events-none absolute inset-0 z-[5] flex flex-col">
@@ -364,6 +367,8 @@ export function Director({ initialTab }: { initialTab: DirectorTab }) {
             <p className="-mt-1 text-[10.5px] text-faint">Réglez-le sur la valeur de votre caméra (fiche technique) : l'aperçu n'est fidèle qu'à cette condition.</p>
             <NumberField label="Point visé au-dessus du sujet" unit="m" min={0} max={10} step={0.1} value={cam.subjectHeightM} onChange={(v) => editCam((c) => ({ ...c, subjectHeightM: v }))} />
             <label className="flex items-center gap-2 text-xs text-muted"><input type="checkbox" className="accent-[var(--color-cyan)]" checked={cam.letterbox} onChange={(e) => editCam((c) => ({ ...c, letterbox: e.target.checked }))} />Bandes 2.39:1 et grille des tiers (Cinematic Preview)</label>
+            <div className="label pt-2">Lumière réelle (soleil)</div>
+            {project?.scene.subject && <SunControl date={sunDate} fixed={sunFixed} onChange={setSun} lat={project.scene.subject.position.lat} lon={project.scene.subject.position.lon} />}
             <p className="text-[10.5px] text-faint">La caméra virtuelle est indépendante de la trajectoire : chaque mouvement définit où elle regarde (sujet, horizon, sol), les transitions la font pivoter en douceur.</p>
           </section>
         )}

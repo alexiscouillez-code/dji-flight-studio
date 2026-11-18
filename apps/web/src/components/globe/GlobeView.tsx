@@ -9,6 +9,8 @@ export type PickMode = "takeoff" | "subject" | null;
 
 export interface GlobeStatus {
   terrain: "world-terrain" | "ellipsoid";
+  /** Google Photorealistic 3D Tiles loaded (real mesh: relief, buildings, vegetation). */
+  photoreal: boolean;
   imagery: "ion-aerial" | "osm";
   /** Human-readable reasons when something fell back. */
   notes: string[];
@@ -41,12 +43,17 @@ interface Props {
   searchPin?: (LatLon & { label: string }) | null;
   pickMode: PickMode;
   initialView?: CameraView;
+  /** Show the photorealistic 3D mesh when available (default true). */
+  photoreal?: boolean;
+  /** Date/time used for sun lighting and shadows (default: now). */
+  sunDate?: Date;
   onPick?(mode: Exclude<PickMode, null>, p: LatLon): void;
   onCursor?(c: CursorInfo | null): void;
   onStatus?(s: GlobeStatus): void;
 }
 
 const CYAN = "#2ad4ee";
+export { CYAN as GLOBE_ACCENT };
 
 export function GlobeView(props: Props) {
   const host = useRef<HTMLDivElement>(null);
@@ -54,6 +61,7 @@ export function GlobeView(props: Props) {
   const viewerRef = useRef<import("cesium").Viewer | null>(null);
   const terrainOk = useRef(false);
   const worldTerrain = useRef<import("cesium").TerrainProvider | null>(null);
+  const tileset = useRef<import("cesium").Cesium3DTileset | null>(null);
   const propsRef = useRef(props);
   propsRef.current = props;
   const [ready, setReady] = useState(false);
@@ -79,7 +87,14 @@ export function GlobeView(props: Props) {
         });
         viewerRef.current = viewer;
         viewer.scene.globe.depthTestAgainstTerrain = true;
-        viewer.scene.globe.enableLighting = false;
+        // Real conditions: sun lighting from the chosen date/time, sky & ground atmosphere, fog.
+        viewer.scene.globe.enableLighting = true;
+        viewer.scene.globe.dynamicAtmosphereLighting = true;
+        viewer.scene.globe.showGroundAtmosphere = true;
+        if (viewer.scene.skyAtmosphere) viewer.scene.skyAtmosphere.show = true;
+        viewer.scene.fog.enabled = true;
+        viewer.clock.shouldAnimate = false;
+        viewer.clock.currentTime = Cs.JulianDate.fromDate(propsRef.current.sunDate ?? new Date());
         viewer.scene.backgroundColor = Cs.Color.fromCssColorString("#06090f");
         (viewer.cesiumWidget.creditContainer as HTMLElement).classList.add("dfs-credits");
 
@@ -92,17 +107,27 @@ export function GlobeView(props: Props) {
           } catch (e) {
             notes.push(`Relief indisponible (${(e as Error).message || "accès Cesium ion refusé"}) : globe lisse.`);
           }
+          try {
+            const ts = await Cs.createGooglePhotorealistic3DTileset({ onlyUsingWithGoogleGeocoder: true }, { maximumScreenSpaceError: 16, showCreditsOnScreen: true });
+            if (destroyed) return;
+            ts.show = false;
+            viewer.scene.primitives.add(ts);
+            tileset.current = ts;
+          } catch (e) {
+            notes.push(`3D photoréaliste indisponible (${(e as Error).message || "accès refusé"}) : relief + imagerie.`);
+          }
         } else notes.push("Aucun token Cesium ion : relief et imagerie satellite désactivés.");
         if (destroyed) return;
         terrainOk.current = terrainKind === "world-terrain";
-        const st: GlobeStatus = { terrain: terrainKind, imagery: hasIonToken ? "ion-aerial" : "osm", notes };
+        const st: GlobeStatus = { terrain: terrainKind, photoreal: Boolean(tileset.current), imagery: hasIonToken ? "ion-aerial" : "osm", notes };
         setStatus(st);
         propsRef.current.onStatus?.(st);
 
         handler = new Cs.ScreenSpaceEventHandler(viewer.scene.canvas);
         const pickLatLon = (pos: import("cesium").Cartesian2): LatLon | null => {
           const ray = viewer.camera.getPickRay(pos);
-          const cart = (ray && viewer.scene.globe.pick(ray, viewer.scene)) ?? viewer.camera.pickEllipsoid(pos);
+          const onMesh = tileset.current?.show && viewer.scene.pickPositionSupported ? viewer.scene.pickPosition(pos) : undefined;
+          const cart = onMesh ?? (ray && viewer.scene.globe.show ? viewer.scene.globe.pick(ray, viewer.scene) : undefined) ?? viewer.camera.pickEllipsoid(pos);
           if (!cart) return null;
           const c = Cs.Cartographic.fromCartesian(cart);
           return { lat: Cs.Math.toDegrees(c.latitude), lon: Cs.Math.toDegrees(c.longitude) };
@@ -131,7 +156,11 @@ export function GlobeView(props: Props) {
             orientation: { heading: Cs.Math.toRadians(v.headingDeg), pitch: Cs.Math.toRadians(v.pitchDeg), roll: 0 },
           });
         } else {
-          viewer.camera.setView({ destination: Cs.Cartesian3.fromDegrees(6.86, 45.9, 2.2e7) });
+          // Start low and oblique over the Mont-Blanc massif rather than from space.
+          viewer.camera.setView({
+            destination: Cs.Cartesian3.fromDegrees(6.905, 45.80, 4200),
+            orientation: { heading: Cs.Math.toRadians(320), pitch: Cs.Math.toRadians(-12), roll: 0 },
+          });
         }
         setReady(true);
       } catch (e) {
@@ -156,9 +185,23 @@ export function GlobeView(props: Props) {
     viewer.scene.globe.maximumScreenSpaceError = q.maximumScreenSpaceError;
     viewer.resolutionScale = q.resolutionScale;
     viewer.scene.globe.tileCacheSize = q.tileCacheSize;
-    viewer.scene.fog.enabled = q.fog;
+    viewer.scene.fog.enabled = true;
+    const shadows = props.quality === "high" || props.quality === "ultra";
+    viewer.shadows = shadows;
+    viewer.terrainShadows = shadows ? Cs!.ShadowMode.RECEIVE_ONLY : Cs!.ShadowMode.DISABLED;
+    if (tileset.current) {
+      tileset.current.maximumScreenSpaceError = q.maximumScreenSpaceError * 8;
+      tileset.current.shadows = shadows ? Cs!.ShadowMode.ENABLED : Cs!.ShadowMode.DISABLED;
+    }
     viewer.scene.requestRender();
-  }, [ready, viewer, props.quality]);
+  }, [ready, viewer, Cs, props.quality]);
+
+  // ---- sun / time of day ----
+  useEffect(() => {
+    if (!ready || !viewer || !Cs) return;
+    viewer.clock.currentTime = Cs.JulianDate.fromDate(props.sunDate ?? new Date());
+    viewer.scene.requestRender();
+  }, [ready, viewer, Cs, props.sunDate]);
 
   // ---- imagery ----
   useEffect(() => {
@@ -195,8 +238,12 @@ export function GlobeView(props: Props) {
     const useWorld = props.terrain && worldTerrain.current;
     viewer.terrainProvider = useWorld ? worldTerrain.current! : new Cs.EllipsoidTerrainProvider();
     terrainOk.current = Boolean(useWorld);
+    // Photorealistic mesh replaces the globe surface (Google tiles must not be mixed with other basemaps).
+    const photo = Boolean(tileset.current) && props.photoreal !== false;
+    if (tileset.current) tileset.current.show = photo;
+    viewer.scene.globe.show = !photo;
     viewer.scene.requestRender();
-  }, [ready, viewer, Cs, props.terrain]);
+  }, [ready, viewer, Cs, props.terrain, props.photoreal]);
 
   // ---- entities (tracks, markers) ----
   useEffect(() => {

@@ -23,3 +23,17 @@ describe("Neo 2 profile", () => {
     expect(a.connect).toBeUndefined();
   });
 });
+
+import { DRONE_PROFILES } from "./profiles";
+describe("MSDK profiles", () => {
+  it("never claim a tested capability: everything but the manual guide is unverified and sourced", () => {
+    for (const p of Object.values(DRONE_PROFILES).filter((x) => x.mode === "sdk-adapter")) {
+      expect(supportedCapabilities(p)).toEqual(["manual-companion"]);
+      expect(p.capabilities.mission.status).toBe("unverified");
+      expect(p.sources.length).toBeGreaterThan(0);
+    }
+  });
+  it("Neo 2 is not an SDK drone", () => {
+    expect(DRONE_PROFILES["dji-neo-2"]!.mode).toBe("manual-companion");
+  });
+});

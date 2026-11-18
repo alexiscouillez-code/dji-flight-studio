@@ -13,6 +13,7 @@ describe("geocoders", () => {
       { properties: { label: "bad" }, geometry: { coordinates: [500, 0] } },
     ] }));
     const r = await g.search("Chamonix");
+    expect((fakeFetch as any).last).toMatch(/geocoder=google/);
     expect(r).toHaveLength(1);
     expect(r[0]).toMatchObject({ label: "Chamonix, France", lat: 45.92, lon: 6.87, bbox: [6.8, 45.9, 6.9, 45.95] });
   });
