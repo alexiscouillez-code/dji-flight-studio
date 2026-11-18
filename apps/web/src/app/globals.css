@@ -88,3 +88,8 @@
 @media (prefers-reduced-motion: reduce) {
   .anim-orbit, .anim-rise, .anim-push, .anim-pull, .anim-track { animation: none; }
 }
+
+/* Cesium credits: required attribution, styled discreetly */
+.cesium-viewer .dfs-credits, .cesium-viewer-bottom { font-size: 10px; opacity: .75; }
+.cesium-widget-credits { right: 8px; left: auto !important; bottom: 4px; }
+.cesium-viewer, .cesium-widget { background: var(--color-bg); }

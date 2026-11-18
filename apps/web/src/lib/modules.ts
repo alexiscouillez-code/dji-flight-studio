@@ -23,10 +23,10 @@ export const MODULES: StudioModule[] = [
   { id: "dashboard", label: "Dashboard", href: "/", icon: Gauge, phase: 1, status: "ready",
     summary: "Vue d'ensemble des projets et de l'état réel du studio.",
     available: ["Projets récents", "Compatibilité matérielle", "Statut des modules"], planned: [] },
-  { id: "virtual-world", label: "Virtual World", href: "/virtual-world", icon: Globe2, phase: 2, status: "planned",
-    summary: "Globe 3D CesiumJS, terrain réel, imagerie, recherche de lieux, import GPX.",
-    available: ["Moteur géodésique testé (WGS84 ↔ ENU)", "Parseur GPX + D+/D- + profil (moteur, sans interface)", "Saisie de coordonnées décimales et DMS"],
-    planned: ["Globe CesiumJS + Cesium World Terrain", "Imagerie à fournisseurs interchangeables", "Géocodage interchangeable", "Import GPX sur le relief 3D", "Profil altimétrique interactif"] },
+  { id: "virtual-world", label: "Virtual World", href: "/virtual-world", icon: Globe2, phase: 2, status: "ready",
+    summary: "Globe 3D CesiumJS, relief réel, imagerie, recherche de lieux, import GPX, profil altimétrique.",
+    available: ["Globe CesiumJS + Cesium World Terrain", "Imagerie satellite / carte OSM", "Recherche lieux et coordonnées", "Import GPX + profil GPX vs relief", "Décollage / sujet / vue enregistrés", "Qualité Low → Ultra"],
+    planned: ["Zones aéronautiques officielles", "Copernicus DEM", "Obstacles cartographiés"] },
   { id: "flight-designer", label: "Flight Designer", href: "/flight-designer", icon: Route, phase: 3, status: "planned",
     summary: "Éditeur de trajectoires 3D : waypoints, splines, orbites, spirales.",
     available: ["Moteur de trajectoire testé : spline Catmull-Rom centripète, longueurs 3D, durées estimées (profil trapézoïdal)"],
@@ -55,7 +55,7 @@ export const MODULES: StudioModule[] = [
     summary: "Création, édition, duplication, archivage, export/import JSON versionné.",
     available: ["CRUD complet", "Format JSON versionné + migrations", "Stockage local ou Supabase"], planned: [] },
   { id: "settings", label: "Settings", href: "/settings", icon: Cog, phase: 1, status: "ready",
-    summary: "Compte, stockage et préférences.", available: ["Compte Supabase", "Envoi des projets locaux vers le cloud"], planned: ["Qualité graphique Low → Ultra (Phase 2)"] },
+    summary: "Compte, stockage et préférences.", available: ["Compte Supabase", "Envoi des projets locaux vers le cloud"], planned: [] },
 ];
 
 export const PRIMARY_NAV = MODULES;

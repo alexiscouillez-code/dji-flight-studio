@@ -9,3 +9,4 @@ coverage
 *.tsbuildinfo
 .vercel
 .DS_Store
+public/cesium

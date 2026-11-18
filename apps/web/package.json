@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/copy-cesium.mjs && next dev",
+    "build": "node scripts/copy-cesium.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"
@@ -16,6 +16,7 @@
     "@dfs/shared-types": "workspace:*",
     "@dfs/trajectory-engine": "workspace:*",
     "@supabase/supabase-js": "^2.119.0",
+    "cesium": "^1.147.0",
     "clsx": "^2.1.1",
     "geist": "^1.9.2",
     "lucide-react": "^1.74.0",

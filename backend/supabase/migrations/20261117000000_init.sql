@@ -5,7 +5,7 @@
 
 -- ---------- helpers ----------
 create or replace function public.set_updated_at() returns trigger
-language plpgsql as $$
+language plpgsql set search_path = public as $$
 begin
   new.updated_at := coalesce(new.updated_at, now());
   if tg_op = 'UPDATE' and new.updated_at = old.updated_at then new.updated_at := now(); end if;
@@ -196,36 +196,36 @@ alter table public.saved_locations enable row level security;
 alter table public.gpx_tracks enable row level security;
 alter table public.simulation_results enable row level security;
 
-create policy "own profile" on public.profiles for all using (id = auth.uid()) with check (id = auth.uid());
-create policy "own prefs" on public.user_preferences for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own profile" on public.profiles for all using (id = (select auth.uid())) with check (id = (select auth.uid()));
+create policy "own prefs" on public.user_preferences for all using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "catalogue readable" on public.drone_profiles for select to authenticated, anon using (true);
 
 create policy "own projects" on public.projects for all to authenticated
-  using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+  using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 create policy "own project versions (read)" on public.project_versions for select to authenticated
-  using (owner_id = auth.uid());
+  using (owner_id = (select auth.uid()));
 
 -- child tables: owner must match AND parent must belong to the same owner
 create policy "own missions" on public.missions for all to authenticated
-  using (owner_id = auth.uid())
-  with check (owner_id = auth.uid() and exists (select 1 from public.projects p where p.id = project_id and p.owner_id = auth.uid()));
+  using (owner_id = (select auth.uid()))
+  with check (owner_id = (select auth.uid()) and exists (select 1 from public.projects p where p.id = project_id and p.owner_id = (select auth.uid())));
 create policy "own waypoints" on public.mission_waypoints for all to authenticated
-  using (owner_id = auth.uid())
-  with check (owner_id = auth.uid() and exists (select 1 from public.missions m where m.id = mission_id and m.owner_id = auth.uid()));
+  using (owner_id = (select auth.uid()))
+  with check (owner_id = (select auth.uid()) and exists (select 1 from public.missions m where m.id = mission_id and m.owner_id = (select auth.uid())));
 create policy "own sequences" on public.mission_sequences for all to authenticated
-  using (owner_id = auth.uid())
-  with check (owner_id = auth.uid() and exists (select 1 from public.missions m where m.id = mission_id and m.owner_id = auth.uid()));
+  using (owner_id = (select auth.uid()))
+  with check (owner_id = (select auth.uid()) and exists (select 1 from public.missions m where m.id = mission_id and m.owner_id = (select auth.uid())));
 create policy "presets read" on public.cinematic_presets for select to authenticated
-  using (owner_id is null or owner_id = auth.uid());
+  using (owner_id is null or owner_id = (select auth.uid()));
 create policy "presets write" on public.cinematic_presets for all to authenticated
-  using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+  using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 create policy "own locations" on public.saved_locations for all to authenticated
-  using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+  using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 create policy "own gpx" on public.gpx_tracks for all to authenticated
-  using (owner_id = auth.uid()) with check (owner_id = auth.uid());
+  using (owner_id = (select auth.uid())) with check (owner_id = (select auth.uid()));
 create policy "own simulations" on public.simulation_results for all to authenticated
-  using (owner_id = auth.uid())
-  with check (owner_id = auth.uid() and exists (select 1 from public.missions m where m.id = mission_id and m.owner_id = auth.uid()));
+  using (owner_id = (select auth.uid()))
+  with check (owner_id = (select auth.uid()) and exists (select 1 from public.missions m where m.id = mission_id and m.owner_id = (select auth.uid())));
 
 -- ---------- Storage: private GPX bucket, one folder per user ----------
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -233,8 +233,8 @@ values ('gpx', 'gpx', false, 10485760, array['application/gpx+xml','application/
 on conflict (id) do nothing;
 
 create policy "gpx own folder read" on storage.objects for select to authenticated
-  using (bucket_id = 'gpx' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'gpx' and (storage.foldername(name))[1] = (select auth.uid())::text);
 create policy "gpx own folder write" on storage.objects for insert to authenticated
-  with check (bucket_id = 'gpx' and (storage.foldername(name))[1] = auth.uid()::text);
+  with check (bucket_id = 'gpx' and (storage.foldername(name))[1] = (select auth.uid())::text);
 create policy "gpx own folder delete" on storage.objects for delete to authenticated
-  using (bucket_id = 'gpx' and (storage.foldername(name))[1] = auth.uid()::text);
+  using (bucket_id = 'gpx' and (storage.foldername(name))[1] = (select auth.uid())::text);

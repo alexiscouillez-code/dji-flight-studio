@@ -53,7 +53,7 @@ export default function Settings() {
           <div className="label mb-4">Affichage</div>
           <dl className="space-y-3 text-sm">
             <div className="flex justify-between"><dt className="text-muted">Thème</dt><dd>Sombre (par défaut)</dd></div>
-            <div className="flex justify-between"><dt className="text-muted">Qualité graphique 3D</dt><dd><span className="tag">Phase 2</span></dd></div>
+            <div className="flex justify-between"><dt className="text-muted">Qualité graphique 3D</dt><dd><Link href="/virtual-world" className="text-cyan hover:underline">Dans Virtual World</Link></dd></div>
             <div className="flex justify-between"><dt className="text-muted">Unités</dt><dd>Mètres · degrés WGS84</dd></div>
           </dl>
         </section>

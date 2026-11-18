@@ -8,6 +8,9 @@ import { PRIMARY_NAV } from "@/lib/modules";
 import { useStudio } from "@/lib/store";
 import { Logo } from "./Logo";
 
+/** Routes that use the full viewport (3D workspaces). */
+const IMMERSIVE = new Set(["/virtual-world"]);
+
 function NavList({ onNavigate }: { onNavigate?: () => void }) {
   const path = usePathname();
   return (
@@ -88,7 +91,8 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
         )}
 
-        <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">{children}</main>
+        {IMMERSIVE.has(path) ? <main className="relative flex-1">{children}</main>
+          : <main className="mx-auto w-full max-w-[1400px] flex-1 px-4 py-6 sm:px-6 lg:px-10 lg:py-10">{children}</main>}
       </div>
     </div>
   );

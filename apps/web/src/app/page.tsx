@@ -47,7 +47,7 @@ export default function Dashboard() {
         description="Lieu réel, relief, trajectoire, cadrage, simulation — puis reproduction avec votre matériel. Les indicateurs ci-dessous sont réels : rien n'est simulé sans être signalé."
         actions={<>
           <button className="btn btn-primary" onClick={newProject} disabled={busy || !repo}><FolderPlus size={16} />New Project</button>
-          <Link className="btn" href="/virtual-world"><Globe2 size={16} />Open Virtual World<span className="tag ml-1">P2</span></Link>
+          <Link className="btn" href="/virtual-world"><Globe2 size={16} />Open Virtual World</Link>
           <Link className="btn" href="/simulator"><PlayCircle size={16} />Flight Simulator<span className="tag ml-1">P3</span></Link>
         </>}
       />

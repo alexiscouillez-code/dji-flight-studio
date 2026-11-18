@@ -14,7 +14,7 @@ create table storage.objects (id uuid primary key default gen_random_uuid(), buc
 create function storage.foldername(name text) returns text[] language sql as $$ select string_to_array(name, '/') $$;
 `;
 await db.exec(stub);
-await db.exec(readFileSync(new URL("../migrations/20261117000000_init.sql", import.meta.url), "utf8"));
+for (const f of ["20261117000000_init.sql", "20261118000000_revoke_trigger_functions.sql"]) await db.exec(readFileSync(new URL(`../migrations/${f}`, import.meta.url), "utf8"));
 await db.exec(`grant usage on schema public, auth to authenticated; grant all on all tables in schema public to authenticated; grant execute on all functions in schema auth to authenticated;`);
 const A = "11111111-1111-4111-8111-111111111111", B = "22222222-2222-4222-8222-222222222222";
 await db.exec(`insert into auth.users values ('${A}'), ('${B}');`);

@@ -9,6 +9,8 @@ type Migration = (input: Raw) => Raw;
  */
 const MIGRATIONS: Record<number, Migration> = {
   0: (doc) => ({ ...doc, schemaVersion: 1 }),
+  // v2 (Phase 2): GPX tracks stored in the project + geographic scene (take-off, subject, saved view).
+  1: (doc) => ({ ...doc, gpxTracks: [], scene: {}, schemaVersion: 2 }),
 };
 
 export class ProjectMigrationError extends Error {}

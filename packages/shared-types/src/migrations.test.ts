@@ -9,12 +9,21 @@ const base = {
 };
 
 describe("migrateProject", () => {
-  it("migrates an unversioned document to v1 and fills defaults", () => {
+  it("migrates an unversioned document to the current version and fills defaults", () => {
     const p = migrateProject(base);
-    expect(p.schemaVersion).toBe(1);
+    expect(p.schemaVersion).toBe(2);
+    expect(p.gpxTracks).toEqual([]);
+    expect(p.scene).toEqual({});
     expect(p.waypoints).toEqual([]);
     expect(p.environment).toEqual({ kind: "none" });
     expect(p.droneProfileId).toBe("dji-neo-2");
+  });
+
+  it("migrates v1 → v2", () => {
+    const p = migrateProject({ ...base, schemaVersion: 1, environment: { kind: "real", center: { lat: 45.9, lon: 6.87 } } });
+    expect(p.schemaVersion).toBe(2);
+    expect(p.environment.kind).toBe("real");
+    expect(p.gpxTracks).toEqual([]);
   });
 
   it("accepts a valid v1 document", () => {
@@ -26,7 +35,7 @@ describe("migrateProject", () => {
   });
 
   it("rejects invalid payloads with a readable message", () => {
-    expect(() => migrateProject({ ...base, schemaVersion: 1, name: "" })).toThrow(/name/);
+    expect(() => migrateProject({ ...base, schemaVersion: 2, name: "" })).toThrow(/name/);
     expect(() => migrateProject([])).toThrow(ProjectMigrationError);
     expect(() => migrateProject({ ...base, schemaVersion: "1" })).toThrow(/schemaVersion/);
   });
